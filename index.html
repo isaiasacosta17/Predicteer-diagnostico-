@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Predicteer — Diagnóstico de Marca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:   #001F3F;
+      --blue:   #0074D9;
+      --red:    #E74C3C;
+      --orange: #E67E22;
+      --green:  #27AE60;
+      --gray:   #7F8C8D;
+      --gray-light: #F4F6F8;
+      --border: #E0E0E0;
+      --white:  #FFFFFF;
+      --red-bg:    #FEF0EE;
+      --orange-bg: #FEF5EC;
+      --green-bg:  #EAF7EF;
+      --blue-bg:   #EAF3FD;
+    }
+    html, body {
+      font-family: 'Poppins', sans-serif;
+      background: #FFFFFF;
+      color: var(--navy);
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; height: 56px;
+    }
+    .logo { font-weight: 800; font-size: 1.1rem; color: var(--navy); letter-spacing: 0.04em; }
+    .tagline { font-size: 0.75rem; color: var(--gray); font-weight: 400; }
+
+    /* ── Screens ── */
+    .screen { display: none; padding-top: 56px; min-height: 100vh; }
+    .screen.active { display: block; animation: fadeIn 200ms ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── HOME ── */
+    #screen-home {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 80px 24px 40px;
+      background: #fff;
+    }
+    #screen-home.active { display: flex; }
+    .home-hero { text-align: center; margin-bottom: 40px; }
+    .home-hero h1 { font-size: 2.2rem; font-weight: 800; color: var(--navy); line-height: 1.15; margin-bottom: 12px; }
+    .home-hero p { font-size: 1rem; color: var(--gray); font-weight: 400; }
+    .home-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 700px; width: 100%; }
+    .home-card {
+      background: #fff; border: 2px solid var(--border); border-radius: 20px;
+      padding: 32px 28px; cursor: pointer; transition: all 200ms ease;
+      text-align: left;
+    }
+    .home-card:hover { border-color: var(--blue); box-shadow: 0 8px 24px rgba(0,116,217,0.12); transform: translateY(-2px); }
+    .home-card .icon { font-size: 2.8rem; margin-bottom: 16px; }
+    .home-card h2 { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    .home-card p { font-size: 0.85rem; color: var(--gray); line-height: 1.5; margin-bottom: 16px; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
+    .badge-blue { background: var(--blue-bg); color: var(--blue); }
+    .badge-orange { background: var(--orange-bg); color: var(--orange); }
+    .home-footer { margin-top: 32px; font-size: 0.78rem; color: var(--gray); text-align: center; }
+
+    /* ── MODULE LAYOUT ── */
+    .module-wrap { max-width: 680px; margin: 0 auto; padding: 32px 24px 60px; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.82rem; color: var(--gray); cursor: pointer;
+      background: none; border: none; margin-bottom: 24px;
+      transition: color 150ms; font-family: 'Poppins', sans-serif;
+    }
+    .back-btn:hover { color: var(--navy); }
+    .module-title { font-size: 1.8rem; font-weight: 800; color: var(--navy); line-height: 1.2; margin-bottom: 6px; }
+    .module-sub { font-size: 0.88rem; color: var(--gray); margin-bottom: 28px; }
+
+    /* ── Inputs Panel ── */
+    .inputs-panel {
+      background: var(--gray-light); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; margin-bottom: 24px;
+    }
+    .input-group { margin-bottom: 20px; }
+    .input-group:last-child { margin-bottom: 0; }
+    .input-label { font-size: 0.8rem; font-weight: 600; color: var(--navy); margin-bottom: 8px; display: block; }
+
+    /* Number stepper */
+    .stepper { display: flex; align-items: center; gap: 12px; }
+    .stepper-btn {
+      width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border);
+      background: #fff; font-size: 1.2rem; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; color: var(--gray);
+      transition: all 150ms; flex-shrink: 0; font-family: 'Poppins', sans-serif;
+    }
+    .stepper-btn:hover { background: var(--blue-bg); border-color: var(--blue); color: var(--blue); }
+    .stepper-btn:active { transform: scale(0.93); }
+    .stepper-display {
+      flex: 1; background: #fff; border: 1px solid var(--border); border-radius: 10px;
+      padding: 8px 14px; text-align: center; font-weight: 700; font-size: 1rem; color: var(--navy);
+    }
+
+    /* Slider */
+    .slider-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .slider-val { font-weight: 700; font-size: 0.9rem; color: var(--blue); }
+    input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 6px; border-radius: 3px; background: var(--border); outline: none; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+      background: var(--blue); cursor: pointer; box-shadow: 0 2px 6px rgba(0,116,217,0.35);
+      border: 2px solid #fff; transition: transform 150ms;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .slider-hints { display: flex; justify-content: space-between; margin-top: 4px; }
+    .slider-hints span { font-size: 0.7rem; font-weight: 500; }
+
+    /* ── Result Cards ── */
+    .results-stack { display: flex; flex-direction: column; gap: 14px; }
+    .rcard { border-radius: 16px; padding: 20px 22px; border: 1.5px solid; }
+    .rcard-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+    .rcard-value { font-size: 1.9rem; font-weight: 800; tabular-nums; line-height: 1.1; margin-bottom: 4px; }
+    .rcard-sub { font-size: 0.78rem; font-weight: 400; color: var(--gray); line-height: 1.4; }
+
+    .rcard-red    { background: var(--red-bg);    border-color: #f5b7b1; }
+    .rcard-red    .rcard-label { color: var(--red); }
+    .rcard-red    .rcard-value { color: var(--red); }
+
+    .rcard-orange { background: var(--orange-bg); border-color: #f5cba7; }
+    .rcard-orange .rcard-label { color: var(--orange); }
+    .rcard-orange .rcard-value { color: var(--orange); }
+
+    .rcard-green  { background: var(--green-bg);  border-color: #a9dfbf; }
+    .rcard-green  .rcard-label { color: var(--green); }
+    .rcard-green  .rcard-value { color: var(--green); }
+
+    .rcard-blue   { background: var(--blue-bg);   border-color: #aed6f1; }
+    .rcard-blue   .rcard-label { color: var(--blue); }
+    .rcard-blue   .rcard-value { color: var(--blue); }
+
+    .rcard-white  { background: #fff; border-color: var(--border); }
+    .rcard-white  .rcard-label { color: var(--gray); }
+    .rcard-white  .rcard-value { color: var(--navy); }
+
+    /* Two-col inside card */
+    .card-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; }
+    .card-col-label { font-size: 0.72rem; color: var(--gray); margin-bottom: 3px; }
+    .card-col-val { font-size: 1.2rem; font-weight: 800; tabular-nums; }
+    .card-col-val.red { color: var(--red); }
+    .card-col-val.green { color: var(--green); }
+    .card-col-val.gray { color: var(--gray); }
+    .card-col-val.blue { color: var(--blue); }
+    .card-diff { font-size: 0.82rem; font-weight: 600; color: var(--orange); text-align: center; padding-top: 8px; border-top: 1px solid #f0e0cc; margin-top: 4px; }
+
+    /* Progress bar */
+    .prog-wrap { margin-top: 10px; }
+    .prog-bar-bg { height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; position: relative; }
+    .prog-bar-fill { height: 100%; border-radius: 5px; transition: width 300ms ease; }
+    .prog-labels { display: flex; justify-content: space-between; margin-top: 5px; }
+    .prog-labels span { font-size: 0.7rem; font-weight: 600; }
+
+    /* Objective marker */
+    .prog-obj-wrap { position: relative; }
+    .prog-obj-line {
+      position: absolute; top: -4px; bottom: -4px; width: 2px;
+      background: var(--green); border-radius: 2px;
+    }
+    .prog-obj-label {
+      position: absolute; top: -22px; transform: translateX(-50%);
+      font-size: 0.62rem; font-weight: 700; color: var(--green); white-space: nowrap;
+    }
+
+    /* Phrase */
+    .phrase { font-size: 1.1rem; font-weight: 700; color: var(--navy); text-align: center; margin: 28px 0 20px; line-height: 1.4; }
+
+    /* CTA button */
+    .cta-btn {
+      width: 100%; background: var(--blue); color: #fff; border: none;
+      border-radius: 14px; padding: 16px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      transition: all 150ms; box-shadow: 0 4px 16px rgba(0,116,217,0.25);
+    }
+    .cta-btn:hover { background: #005fad; box-shadow: 0 6px 20px rgba(0,116,217,0.35); }
+    .cta-btn:active { transform: scale(0.99); }
+
+    /* Italic note */
+    .note-italic { font-size: 0.72rem; color: var(--gray); font-style: italic; margin-top: 6px; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,31,63,0.6); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .modal-overlay.open { display: flex; animation: fadeIn 180ms ease; }
+    .modal-box {
+      background: #fff; border-radius: 20px; width: 100%; max-width: 440px;
+      padding: 32px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: scaleIn 200ms ease;
+    }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px; width: 30px; height: 30px;
+      border: none; background: var(--gray-light); border-radius: 50%; cursor: pointer;
+      font-size: 1rem; color: var(--gray); display: flex; align-items: center; justify-content: center;
+      transition: all 150ms; font-family: 'Poppins', sans-serif;
+    }
+    .modal-close:hover { background: var(--border); color: var(--navy); }
+    .modal-title { font-size: 1.2rem; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+    .modal-sub { font-size: 0.82rem; color: var(--gray); margin-bottom: 20px; }
+    .loss-summary {
+      border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;
+    }
+    .loss-summary .ls-label { font-size: 0.72rem; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .loss-summary .ls-value { font-size: 1.6rem; font-weight: 800; tabular-nums; }
+    .loss-summary .ls-desc { font-size: 0.75rem; color: var(--gray); margin-top: 2px; }
+
+    /* Form fields */
+    .form-field { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--navy); margin-bottom: 5px; }
+    .form-input {
+      width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
+      border-radius: 10px; font-size: 0.88rem; font-family: 'Poppins', sans-serif;
+      outline: none; transition: border-color 150ms, box-shadow 150ms; color: var(--navy);
+    }
+    .form-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,116,217,0.12); }
+    .form-input.error { border-color: var(--red); background: var(--red-bg); }
+    .form-input.valid { border-color: var(--green); }
+    .field-error { font-size: 0.72rem; color: var(--red); margin-top: 3px; display: none; }
+    .field-error.show { display: block; }
+
+    .submit-btn {
+      width: 100%; background: var(--blue); color: #fff; border: none;
+      border-radius: 12px; padding: 14px; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      transition: all 150ms; display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 4px;
+    }
+    .submit-btn:hover { background: #005fad; }
+    .submit-btn:disabled { background: #aed6f1; cursor: not-allowed; }
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 600ms linear infinite; display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .server-error { font-size: 0.78rem; color: var(--red); text-align: center; margin-top: 8px; display: none; }
+
+    /* ── SUCCESS ── */
+    #screen-success {
+      min-height: 100vh; background: var(--navy);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 80px 24px 40px; text-align: center;
+    }
+    #screen-success.active { display: flex; }
+    .success-check { margin-bottom: 28px; }
+    .success-check svg circle { stroke-dasharray: 283; stroke-dashoffset: 283; animation: drawCircle 600ms ease 100ms forwards; }
+    .success-check svg path  { stroke-dasharray: 80;  stroke-dashoffset: 80;  animation: drawPath  400ms ease 650ms forwards; }
+    @keyframes drawCircle { to { stroke-dashoffset: 0; } }
+    @keyframes drawPath   { to { stroke-dashoffset: 0; } }
+    .success-title { font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 12px; }
+    .success-msg { font-size: 0.95rem; color: rgba(255,255,255,0.7); line-height: 1.6; max-width: 380px; margin-bottom: 8px; }
+    .success-loss { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-bottom: 32px; }
+    .success-loss strong { color: #fff; }
+    .success-divider { width: 100%; max-width: 380px; height: 1px; background: rgba(255,255,255,0.1); margin-bottom: 28px; }
+    .success-btns { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px; }
+    .btn-wa {
+      background: #fff; color: var(--navy); border: none; border-radius: 12px;
+      padding: 14px 20px; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 150ms; text-decoration: none;
+    }
+    .btn-wa:hover { background: #f0f0f0; }
+    .btn-reset {
+      background: transparent; border: 1px solid rgba(255,255,255,0.25); color: rgba(255,255,255,0.8);
+      border-radius: 12px; padding: 13px; font-size: 0.88rem; font-weight: 500;
+      cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 150ms;
+    }
+    .btn-reset:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+    .success-note { margin-top: 20px; font-size: 0.72rem; color: rgba(255,255,255,0.35); }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .home-cards { grid-template-columns: 1fr; max-width: 400px; }
+      .home-hero h1 { font-size: 1.6rem; }
+      .module-title { font-size: 1.4rem; }
+      .rcard-value { font-size: 1.5rem; }
+      .card-cols { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <span class="logo">PREDICTEER</span>
+  <span class="tagline">Predict. Steer. Execute.</span>
+</header>
+
+<!-- ══════════════════════════════════════
+     SCREEN: HOME
+══════════════════════════════════════ -->
+<div id="screen-home" class="screen active">
+  <div class="home-hero">
+    <h1>¿Cuánto dinero está<br>perdiendo tu marca?</h1>
+    <p>Elige el diagnóstico que aplica a tu situación</p>
+  </div>
+  <div class="home-cards">
+    <div class="home-card" onclick="goTo('inventory')">
+      <div class="icon">📦</div>
+      <h2>Inventario sin vender</h2>
+      <p>Calcula cuánto margen destruyes liquidando en feria</p>
+      <span class="badge badge-blue">Ferias EVA</span>
+    </div>
+    <div class="home-card" onclick="goTo('churn')">
+      <div class="icon">👥</div>
+      <h2>Clientes que no vuelven</h2>
+      <p>Calcula cuánto pierdes cuando una clienta no recompra</p>
+      <span class="badge badge-orange">E-commerce</span>
+    </div>
+  </div>
+  <p class="home-footer">Diagnóstico gratuito · Sin compromiso · Respuesta en 24h</p>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN: INVENTORY
+══════════════════════════════════════ -->
+<div id="screen-inventory" class="screen">
+  <div class="module-wrap">
+    <button class="back-btn" onclick="goTo('home')">← Volver</button>
+    <h1 class="module-title">¿Cuánto margen estás destruyendo?</h1>
+    <p class="module-sub">Mueve los controles para ver el impacto en tiempo real</p>
+
+    <!-- Inputs -->
+    <div class="inputs-panel">
+      <!-- 1. Prendas -->
+      <div class="input-group">
+        <label class="input-label">Prendas que llevas a la feria</label>
+        <div class="stepper">
+          <button class="stepper-btn" onclick="adj('inv_prendas',-50)">−</button>
+          <div class="stepper-display" id="disp_inv_prendas">300 prendas</div>
+          <button class="stepper-btn" onclick="adj('inv_prendas',50)">+</button>
+        </div>
+      </div>
+      <!-- 2. Precio -->
+      <div class="input-group">
+        <label class="input-label">Precio de venta por prenda</label>
+        <div class="stepper">
+          <button class="stepper-btn" onclick="adj('inv_precio',-10000)">−</button>
+          <div class="stepper-display" id="disp_inv_precio">$ 120.000 COP</div>
+          <button class="stepper-btn" onclick="adj('inv_precio',10000)">+</button>
+        </div>
+      </div>
+      <!-- 3. % sobrante -->
+      <div class="input-group">
+        <div class="slider-row">
+          <label class="input-label" style="margin:0">Inventario que queda sin vender</label>
+          <span class="slider-val" id="disp_inv_sobrante">35% — 105 prendas</span>
+        </div>
+        <input type="range" id="inv_sobrante" min="5" max="70" step="5" value="35" oninput="calcInventory()">
+        <div class="slider-hints">
+          <span style="color:var(--green)">12% objetivo</span>
+          <span style="color:var(--red)">70% crítico</span>
+        </div>
+      </div>
+      <!-- 4. % descuento -->
+      <div class="input-group">
+        <div class="slider-row">
+          <label class="input-label" style="margin:0">Descuento al liquidar el sobrante</label>
+          <span class="slider-val" id="disp_inv_descuento">40%</span>
+        </div>
+        <input type="range" id="inv_descuento" min="10" max="70" step="5" value="40" oninput="calcInventory()">
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-stack">
+      <!-- Roja -->
+      <div class="rcard rcard-red">
+        <div class="rcard-label">MARGEN DESTRUIDO POR LIQUIDACIÓN</div>
+        <div class="rcard-value" id="r_margen_destruido">$0</div>
+        <div class="rcard-sub" id="r_margen_sub">—</div>
+      </div>
+
+      <!-- Naranja -->
+      <div class="rcard rcard-orange">
+        <div class="rcard-label">INGRESO REAL VS INGRESO POTENCIAL</div>
+        <div class="card-cols">
+          <div>
+            <div class="card-col-label">Con liquidación</div>
+            <div class="card-col-val red" id="r_ing_liquidacion">$0</div>
+          </div>
+          <div>
+            <div class="card-col-label">A precio normal</div>
+            <div class="card-col-val green" id="r_ing_normal">$0</div>
+          </div>
+        </div>
+        <div class="card-diff" id="r_diferencia">Diferencia: $0</div>
+      </div>
+
+      <!-- Sell-through bar -->
+      <div class="rcard rcard-white">
+        <div class="rcard-label">SELL-THROUGH ACTUAL VS OBJETIVO</div>
+        <div class="prog-wrap">
+          <div class="prog-obj-wrap">
+            <div class="prog-bar-bg">
+              <div class="prog-bar-fill" id="prog_sell" style="width:65%;background:var(--red)"></div>
+            </div>
+            <div class="prog-obj-line" style="left:88%">
+              <div class="prog-obj-label">88% objetivo</div>
+            </div>
+          </div>
+          <div class="prog-labels">
+            <span id="prog_sell_label" style="color:var(--red)">65% actual</span>
+            <span style="color:var(--green)">88% objetivo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verde -->
+      <div class="rcard rcard-green">
+        <div class="rcard-label">CON PREDICCIÓN DE INVENTARIO</div>
+        <div class="rcard-value" id="r_ahorro_anual">$0</div>
+        <div class="rcard-sub" id="r_ahorro_sub">recuperados al año (3 ferias)</div>
+        <span id="r_ahorro_badge" style="display:inline-block;margin-top:8px;padding:3px 10px;background:rgba(39,174,96,0.15);color:var(--green);border-radius:20px;font-size:0.72rem;font-weight:600;"></span>
+      </div>
+    </div>
+
+    <p class="phrase">"No es que vendas menos.<br>Es que llevas de más."</p>
+    <button class="cta-btn" onclick="openModal('inventory')">Quiero optimizar mi inventario</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN: CHURN
+══════════════════════════════════════ -->
+<div id="screen-churn" class="screen">
+  <div class="module-wrap">
+    <button class="back-btn" onclick="goTo('home')">← Volver</button>
+    <h1 class="module-title">¿Cuánto vale una clienta que no vuelve?</h1>
+    <p class="module-sub">Descubre el costo real de no retener</p>
+
+    <!-- Inputs -->
+    <div class="inputs-panel">
+      <!-- 1. Clientas -->
+      <div class="input-group">
+        <label class="input-label">Clientas activas en tu base</label>
+        <div class="stepper">
+          <button class="stepper-btn" onclick="adj('ch_clientes',-50)">−</button>
+          <div class="stepper-display" id="disp_ch_clientes">500 clientas</div>
+          <button class="stepper-btn" onclick="adj('ch_clientes',50)">+</button>
+        </div>
+      </div>
+      <!-- 2. Ticket -->
+      <div class="input-group">
+        <label class="input-label">Ticket promedio por compra</label>
+        <div class="stepper">
+          <button class="stepper-btn" onclick="adj('ch_ticket',-10000)">−</button>
+          <div class="stepper-display" id="disp_ch_ticket">$ 150.000 COP</div>
+          <button class="stepper-btn" onclick="adj('ch_ticket',10000)">+</button>
+        </div>
+      </div>
+      <!-- 3. Frecuencia -->
+      <div class="input-group">
+        <div class="slider-row">
+          <label class="input-label" style="margin:0">Veces que compra una clienta leal al año</label>
+          <span class="slider-val" id="disp_ch_freq">2 veces/año</span>
+        </div>
+        <input type="range" id="ch_freq" min="1" max="6" step="0.5" value="2" oninput="calcChurn()">
+      </div>
+      <!-- 4. % ferias -->
+      <div class="input-group">
+        <div class="slider-row">
+          <label class="input-label" style="margin:0">% de ventas que vienen de ferias</label>
+          <span class="slider-val" id="disp_ch_ferias">55%</span>
+        </div>
+        <input type="range" id="ch_ferias" min="20" max="80" step="5" value="55" oninput="calcChurn()">
+        <div class="slider-hints">
+          <span style="color:var(--gray)">20% bajo</span>
+          <span style="color:var(--red)">80% dependencia total</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-stack">
+      <!-- Roja — dependencia -->
+      <div class="rcard rcard-red">
+        <div class="rcard-label">TU INGRESO DEPENDE DE 6 DÍAS AL AÑO</div>
+        <div class="rcard-value" id="r_dep_ferias">$0</div>
+        <div class="rcard-sub" id="r_dep_sub">—</div>
+        <div class="prog-wrap" style="margin-top:10px">
+          <div class="prog-bar-bg">
+            <div class="prog-bar-fill" id="prog_dep" style="width:55%;background:var(--red)"></div>
+          </div>
+          <div class="prog-labels">
+            <span id="prog_dep_label" style="color:var(--red)">55% Ferias</span>
+            <span id="prog_eco_label" style="color:var(--gray)">45% E-commerce</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Naranja — churn -->
+      <div class="rcard rcard-orange">
+        <div class="rcard-label">CLIENTAS PERDIDAS ESTE AÑO (estimado)</div>
+        <div class="rcard-value" id="r_clientes_perdidos">175 clientas</div>
+        <div class="rcard-sub" id="r_ingreso_perdido">—</div>
+        <div style="border-top:1px solid #f5cba7;margin-top:10px;padding-top:10px">
+          <div style="font-size:0.72rem;color:var(--gray);margin-bottom:3px">Valor de por vida de cada clienta (3 años)</div>
+          <div style="font-size:1.15rem;font-weight:800;color:var(--navy)" id="r_clv">$0</div>
+        </div>
+        <p class="note-italic">Estimado con benchmark del sector moda Colombia (churn 35% anual)</p>
+      </div>
+
+      <!-- Verde -->
+      <div class="rcard rcard-green">
+        <div class="rcard-label">SI RETIENES EL 15% DE LAS QUE SE IBAN</div>
+        <div class="rcard-value" id="r_ganancia_ret">$0</div>
+        <div class="rcard-sub">adicionales al año con campañas de reactivación y predicción de comportamiento</div>
+      </div>
+
+      <!-- Azul -->
+      <div class="rcard rcard-blue">
+        <div class="rcard-label">TU E-COMMERCE PUEDE CRECER SIN FERIAS</div>
+        <div class="card-cols">
+          <div>
+            <div class="card-col-label">Hoy</div>
+            <div class="card-col-val gray" id="r_eco_actual">$0</div>
+          </div>
+          <div>
+            <div class="card-col-label">Potencial</div>
+            <div class="card-col-val blue" id="r_eco_pot">$0</div>
+          </div>
+        </div>
+        <div class="rcard-sub" style="margin-top:8px">Identificando quién está a punto de irse, antes de que se vaya</div>
+      </div>
+    </div>
+
+    <p class="phrase">"No necesitas más clientas nuevas.<br>Necesitas no perder las que ya tienes."</p>
+    <button class="cta-btn" onclick="openModal('churn')">Quiero reducir mi churn</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN: SUCCESS
+══════════════════════════════════════ -->
+<div id="screen-success" class="screen">
+  <div class="success-check">
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+      <circle cx="40" cy="40" r="36" stroke="white" stroke-width="3" fill="none"/>
+      <path d="M24 40 L35 51 L56 30" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+  </div>
+  <h1 class="success-title" id="s_title">¡Listo!</h1>
+  <p class="success-msg" id="s_msg">Nos comunicaremos contigo pronto.</p>
+  <p class="success-loss" id="s_loss"></p>
+  <div class="success-divider"></div>
+  <div class="success-btns">
+    <a id="s_wa_btn" href="#" target="_blank" class="btn-wa">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Abrir WhatsApp ahora
+    </a>
+    <button class="btn-reset" onclick="goTo('home')">Hacer otro diagnóstico</button>
+  </div>
+  <p class="success-note">También recibirás un correo con los detalles del diagnóstico.</p>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL — LEAD CAPTURE
+══════════════════════════════════════ -->
+<div id="modal-overlay" class="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">Recibe tu diagnóstico personalizado</div>
+    <div class="modal-sub">Te contactamos en menos de 24 horas</div>
+
+    <!-- Loss summary -->
+    <div class="loss-summary" id="modal_loss_box">
+      <div class="ls-label">Pérdida estimada identificada</div>
+      <div class="ls-value" id="modal_loss_value">$0</div>
+      <div class="ls-desc" id="modal_loss_desc">—</div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-field">
+      <label class="form-label">Nombre completo</label>
+      <input type="text" id="f_nombre" class="form-input" placeholder="Tu nombre" oninput="liveValidate('f_nombre')">
+      <div class="field-error" id="e_nombre">Campo requerido</div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Nombre de tu marca</label>
+      <input type="text" id="f_marca" class="form-input" placeholder="Nombre de tu marca" oninput="liveValidate('f_marca')">
+      <div class="field-error" id="e_marca">Campo requerido</div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Correo electrónico</label>
+      <input type="email" id="f_correo" class="form-input" placeholder="hola@tumarca.com" oninput="liveValidate('f_correo')">
+      <div class="field-error" id="e_correo">Ingresa un correo válido</div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">WhatsApp</label>
+      <input type="tel" id="f_whatsapp" class="form-input" placeholder="Ej: 3001234567" oninput="liveValidate('f_whatsapp')">
+      <div class="field-error" id="e_whatsapp">Ingresa un número válido (mín. 10 dígitos)</div>
+    </div>
+
+    <button class="submit-btn" id="submit_btn" onclick="submitLead()">
+      <div class="spinner" id="submit_spinner"></div>
+      <span id="submit_text">Enviar diagnóstico</span>
+    </button>
+    <div class="server-error" id="server_error">Hubo un error al enviar. Intenta de nuevo.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+// ── CONFIG — REEMPLAZA ESTOS VALORES ──────────────────────────
+const MAKE_WEBHOOK_URL  = 'https://hook.us2.make.com/TU_WEBHOOK_ID_AQUI'
+const WHATSAPP_NUMBER   = '573001234567'   // Tu número sin + (código país incluido)
+// ──────────────────────────────────────────────────────────────
+
+// ── State ────────────────────────────────────────────────────
+const state = {
+  inv_prendas:  300,
+  inv_precio:   120000,
+  ch_clientes:  500,
+  ch_ticket:    150000,
+}
+let activeModule  = 'inventory'
+let currentLoss   = 0
+
+// ── Navigation ───────────────────────────────────────────────
+function goTo(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
+  const el = document.getElementById('screen-' + screen)
+  el.classList.add('active')
+  window.scrollTo(0, 0)
+  if (screen === 'inventory') calcInventory()
+  if (screen === 'churn')     calcChurn()
+}
+
+// ── Format COP ───────────────────────────────────────────────
+function fCOP(v) {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency', currency: 'COP',
+    minimumFractionDigits: 0, maximumFractionDigits: 0
+  }).format(Math.round(v))
+}
+
+// ── Steppers ─────────────────────────────────────────────────
+function adj(key, delta) {
+  const limits = {
+    inv_prendas:  { min: 50,    max: 2000,   step: 50 },
+    inv_precio:   { min: 10000, max: 2000000, step: 10000 },
+    ch_clientes:  { min: 50,    max: 10000,  step: 50 },
+    ch_ticket:    { min: 10000, max: 2000000, step: 10000 },
+  }
+  const l = limits[key]
+  state[key] = Math.min(l.max, Math.max(l.min, state[key] + delta))
+  updateDisplays()
+  if (key.startsWith('inv')) calcInventory()
+  else                        calcChurn()
+}
+
+function updateDisplays() {
+  document.getElementById('disp_inv_prendas').textContent = state.inv_prendas.toLocaleString('es-CO') + ' prendas'
+  document.getElementById('disp_inv_precio').textContent  = '$ ' + state.inv_precio.toLocaleString('es-CO') + ' COP'
+  document.getElementById('disp_ch_clientes').textContent = state.ch_clientes.toLocaleString('es-CO') + ' clientas'
+  document.getElementById('disp_ch_ticket').textContent   = '$ ' + state.ch_ticket.toLocaleString('es-CO') + ' COP'
+}
+
+// ── INVENTORY CALC ────────────────────────────────────────────
+function calcInventory() {
+  const prendas  = state.inv_prendas
+  const precio   = state.inv_precio
+  const pctSob   = +document.getElementById('inv_sobrante').value
+  const pctDesc  = +document.getElementById('inv_descuento').value
+
+  document.getElementById('disp_inv_sobrante').textContent =
+    pctSob + '% — ' + Math.round(prendas * pctSob / 100) + ' prendas'
+  document.getElementById('disp_inv_descuento').textContent = pctDesc + '%'
+
+  const costo        = precio * 0.45
+  const margenNormal = precio * 0.55
+  const sobrantes    = Math.round(prendas * pctSob / 100)
+  const precioLiq    = precio * (1 - pctDesc / 100)
+  const margenLiq    = Math.max(0, precioLiq - costo)
+  const margenDestr  = (margenNormal - margenLiq) * sobrantes
+  const ingLiq       = sobrantes * precioLiq
+  const ingNormal    = sobrantes * precio
+  const diferencia   = ingNormal - ingLiq
+  const sellThrough  = 100 - pctSob
+
+  // Con predicción
+  const sobOpt       = Math.round(prendas * 0.12)
+  const margenDestrOpt = (margenNormal - margenLiq) * sobOpt
+  const ahorroPorFeria = Math.max(0, margenDestr - margenDestrOpt)
+  const ahorroAnual  = ahorroPorFeria * 3
+
+  currentLoss = margenDestr
+
+  // Update DOM
+  document.getElementById('r_margen_destruido').textContent = fCOP(margenDestr)
+  document.getElementById('r_margen_sub').textContent =
+    sobrantes + ' prendas liquidadas a ' + fCOP(precioLiq) + ' vs precio normal ' + fCOP(precio)
+
+  document.getElementById('r_ing_liquidacion').textContent = fCOP(ingLiq)
+  document.getElementById('r_ing_normal').textContent      = fCOP(ingNormal)
+  document.getElementById('r_diferencia').textContent      = fCOP(diferencia) + ' de ingresos que nunca llegaron'
+
+  // Sell-through bar
+  const stColor = sellThrough >= 88 ? 'var(--green)' : sellThrough >= 70 ? 'var(--orange)' : 'var(--red)'
+  const prog = document.getElementById('prog_sell')
+  prog.style.width     = sellThrough + '%'
+  prog.style.background = stColor
+  document.getElementById('prog_sell_label').textContent = sellThrough + '% actual'
+  document.getElementById('prog_sell_label').style.color = stColor
+
+  document.getElementById('r_ahorro_anual').textContent = '+ ' + fCOP(ahorroAnual)
+  document.getElementById('r_ahorro_sub').textContent   = 'recuperados al año (3 ferias) llevando solo lo que vas a vender'
+  document.getElementById('r_ahorro_badge').textContent = 'Reduciendo sobrante de ' + pctSob + '% → 12%'
+}
+
+// ── CHURN CALC ────────────────────────────────────────────────
+function calcChurn() {
+  const clientes = state.ch_clientes
+  const ticket   = state.ch_ticket
+  const freq     = +document.getElementById('ch_freq').value
+  const pctFer   = +document.getElementById('ch_ferias').value
+
+  document.getElementById('disp_ch_freq').textContent   = freq + ' veces/año'
+  document.getElementById('disp_ch_ferias').textContent = pctFer + '%'
+
+  const ingresoActual    = clientes * ticket * freq
+  const clientasPerd     = Math.round(clientes * 0.35)
+  const ingresoPerdido   = clientasPerd * ticket * freq
+  const clvPorClienta    = ticket * freq * 3
+  const ingresoConRet    = clientes * ticket * (freq + 0.5) * 0.80
+  const gananciaPot      = Math.max(0, ingresoConRet - ingresoActual)
+  const depFerias        = ingresoActual * pctFer / 100
+  const ecoActual        = ingresoActual * (1 - pctFer / 100)
+  const ecoPot           = ecoActual * 1.6
+
+  currentLoss = ingresoPerdido
+
+  document.getElementById('r_dep_ferias').textContent = fCOP(depFerias)
+  document.getElementById('r_dep_sub').textContent    =
+    'El ' + pctFer + '% de tus ventas entra solo en ferias. El resto del año tu e-commerce genera ' + fCOP(ecoActual)
+
+  const prog2 = document.getElementById('prog_dep')
+  prog2.style.width = pctFer + '%'
+  document.getElementById('prog_dep_label').textContent = pctFer + '% Ferias'
+  document.getElementById('prog_eco_label').textContent = (100 - pctFer) + '% E-commerce'
+
+  document.getElementById('r_clientes_perdidos').textContent = '~' + clientasPerd + ' clientas'
+  document.getElementById('r_ingreso_perdido').textContent   = fCOP(ingresoPerdido) + ' que no van a volver'
+  document.getElementById('r_clv').textContent               = fCOP(clvPorClienta)
+  document.getElementById('r_ganancia_ret').textContent      = '+ ' + fCOP(gananciaPot)
+  document.getElementById('r_eco_actual').textContent        = fCOP(ecoActual)
+  document.getElementById('r_eco_pot').textContent           = fCOP(ecoPot)
+}
+
+// ── MODAL ────────────────────────────────────────────────────
+function openModal(module) {
+  activeModule = module
+  const isInv  = module === 'inventory'
+  const box    = document.getElementById('modal_loss_box')
+  box.style.background = isInv ? 'var(--red-bg)' : 'var(--orange-bg)'
+  document.getElementById('modal_loss_value').textContent = fCOP(currentLoss)
+  document.getElementById('modal_loss_value').style.color = isInv ? 'var(--red)' : 'var(--orange)'
+  document.getElementById('modal_loss_desc').textContent  = isInv
+    ? 'en margen destruido por feria'
+    : 'en clientas perdidas este año'
+
+  // Reset form
+  ;['f_nombre','f_marca','f_correo','f_whatsapp'].forEach(id => {
+    const el = document.getElementById(id)
+    el.value = ''
+    el.className = 'form-input'
+  })
+  ;['e_nombre','e_marca','e_correo','e_whatsapp'].forEach(id =>
+    document.getElementById(id).classList.remove('show')
+  )
+  document.getElementById('server_error').style.display = 'none'
+  document.getElementById('submit_btn').disabled = false
+  document.getElementById('submit_text').textContent = 'Enviar diagnóstico'
+  document.getElementById('submit_spinner').style.display = 'none'
+
+  document.getElementById('modal-overlay').classList.add('open')
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open')
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal()
+}
+
+// ── VALIDATION ────────────────────────────────────────────────
+function liveValidate(id) {
+  const el  = document.getElementById(id)
+  const err = document.getElementById('e_' + id.replace('f_', ''))
+  const v   = el.value.trim()
+  let valid = false
+
+  if (id === 'f_correo') {
+    valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+  } else if (id === 'f_whatsapp') {
+    valid = v.replace(/\D/g, '').length >= 10
+  } else {
+    valid = v.length > 0
+  }
+
+  if (valid) {
+    el.className = 'form-input valid'
+    err.classList.remove('show')
+  } else if (v.length > 0) {
+    el.className = 'form-input error'
+    err.classList.add('show')
+  }
+}
+
+function validateAll() {
+  let ok = true
+  const fields = ['f_nombre', 'f_marca', 'f_correo', 'f_whatsapp']
+  fields.forEach(id => {
+    const el  = document.getElementById(id)
+    const key = id.replace('f_', '')
+    const err = document.getElementById('e_' + key)
+    const v   = el.value.trim()
+    let valid = false
+
+    if (id === 'f_correo')    valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+    else if (id === 'f_whatsapp') valid = v.replace(/\D/g, '').length >= 10
+    else                          valid = v.length > 0
+
+    if (!valid) {
+      el.className = 'form-input error'
+      err.classList.add('show')
+      ok = false
+    }
+  })
+  return ok
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────
+async function submitLead() {
+  if (!validateAll()) return
+
+  const nombre   = document.getElementById('f_nombre').value.trim()
+  const marca    = document.getElementById('f_marca').value.trim()
+  const correo   = document.getElementById('f_correo').value.trim()
+  const whatsapp = document.getElementById('f_whatsapp').value.replace(/\D/g, '')
+
+  const btn     = document.getElementById('submit_btn')
+  const spinner = document.getElementById('submit_spinner')
+  const text    = document.getElementById('submit_text')
+  const srvErr  = document.getElementById('server_error')
+
+  btn.disabled            = true
+  spinner.style.display   = 'block'
+  text.textContent        = 'Enviando...'
+  srvErr.style.display    = 'none'
+
+  const payload = {
+    nombre, marca, correo, whatsapp,
+    modulo:            activeModule,
+    perdida_calculada: currentLoss,
+    perdida_formateada: fCOP(currentLoss),
+    fecha:             new Date().toISOString(),
+    fuente:            'herramienta-diagnostico-feria',
+  }
+
+  try {
+    const res = await fetch(MAKE_WEBHOOK_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    })
+
+    if (res.ok) {
+      closeModal()
+      showSuccess(nombre, marca, whatsapp)
+    } else {
+      throw new Error('Server error')
+    }
+  } catch {
+    btn.disabled          = false
+    spinner.style.display = 'none'
+    text.textContent      = 'Enviar diagnóstico'
+    srvErr.style.display  = 'block'
+  }
+}
+
+// ── SUCCESS ───────────────────────────────────────────────────
+function showSuccess(nombre, marca, whatsapp) {
+  const isInv = activeModule === 'inventory'
+  const msg   = isInv
+    ? `Hola, acabo de calcular que estoy perdiendo ${fCOP(currentLoss)} por feria en margen. Quiero saber cómo optimizar mi inventario.`
+    : `Hola, calculé que podría estar perdiendo ${fCOP(currentLoss)} al año en clientas que no regresan. Quiero entender cómo mejorarlo.`
+
+  document.getElementById('s_title').textContent = '¡Listo, ' + nombre + '!'
+  document.getElementById('s_msg').textContent   =
+    'Nos comunicaremos con ' + marca + ' al +57' + whatsapp + ' en menos de 24 horas con tu diagnóstico.'
+  document.getElementById('s_loss').innerHTML =
+    'Pérdida estimada identificada: <strong>' + fCOP(currentLoss) + '</strong>'
+  document.getElementById('s_wa_btn').href =
+    'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg)
+
+  goTo('success')
+}
+
+// ── Init ──────────────────────────────────────────────────────
+updateDisplays()
+calcInventory()
+calcChurn()
+</script>
+</body>
+</html>
